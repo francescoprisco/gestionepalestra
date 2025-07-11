@@ -5,6 +5,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.Optional;
 
 public interface ReceptionistRepository extends MongoRepository<Receptionist, String> {
-    Optional<Receptionist> findByMail(String email);
-    Boolean existsByMail(String email);
+    Optional<Receptionist> findByEmail(String email);
+    Boolean existsByEmail(String email);
 }

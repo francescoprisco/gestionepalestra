@@ -26,22 +26,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         // First, try to find a Cliente
-        var clienteOpt = clienteRepository.findByMail(username);
+        var clienteOpt = clienteRepository.findByEmail(username);
         if (clienteOpt.isPresent()) {
             Cliente cliente = clienteOpt.get();
             return new User(
-                cliente.getMail(),
+                cliente.getEmail(),
                 cliente.getPassword(),
                 cliente.getRoles().stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList())
             );
         }
 
         // If not a Cliente, try to find a Receptionist
-        var receptionistOpt = receptionistRepository.findByMail(username);
+        var receptionistOpt = receptionistRepository.findByEmail(username);
         if (receptionistOpt.isPresent()) {
             Receptionist receptionist = receptionistOpt.get();
             return new User(
-                receptionist.getMail(),
+                receptionist.getEmail(),
                 receptionist.getPassword(),
                 receptionist.getRoles().stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList())
             );

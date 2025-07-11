@@ -34,7 +34,7 @@ public class BookingController {
     @GetMapping("/my-bookings")
     public ResponseEntity<List<Prenotazione>> getMyBookings(Principal principal) {
         // Nota: ho corretto il metodo in ClienteRepository per questa chiamata
-        return ResponseEntity.ok(prenotazioneRepository.findByCliente_Mail(principal.getName()));
+        return ResponseEntity.ok(prenotazioneRepository.findByCliente_Email(principal.getName()));
     }
 
     @PostMapping

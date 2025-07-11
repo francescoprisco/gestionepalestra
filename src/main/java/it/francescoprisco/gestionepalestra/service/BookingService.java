@@ -43,9 +43,9 @@ public class BookingService {
      * Crea una nuova prenotazione per il cliente loggato.
      * Implementa: Prenotazione turno [cite: 201]
      */
-    public Prenotazione createBooking(String clienteMail, String fasciaOrariaId, LocalDate data) {
+    public Prenotazione createBooking(String clienteEmail, String fasciaOrariaId, LocalDate data) {
         FasciaOraria fascia = findFasciaOrariaById(fasciaOrariaId);
-        Cliente cliente = findClienteByMail(clienteMail);
+        Cliente cliente = findClienteByEmail(clienteEmail);
         
         // Regola: Impedisce prenotazioni multiple nella stessa fascia oraria [cite: 148]
         if (prenotazioneRepository.existsByCliente_IdAndDataAndFasciaOraria_Id(cliente.getId(), data, fasciaOrariaId)) {
@@ -65,9 +65,9 @@ public class BookingService {
      * Modifica una prenotazione esistente per un cliente.
      * Implementa: Modifica turno [cite: 202]
      */
-    public Prenotazione modifyBooking(String bookingId, String clienteMail, String nuovaFasciaId, LocalDate nuovaData) {
+    public Prenotazione modifyBooking(String bookingId, String clienteEmail, String nuovaFasciaId, LocalDate nuovaData) {
         Prenotazione vecchiaPrenotazione = findBookingById(bookingId);
-        Cliente cliente = findClienteByMail(clienteMail);
+        Cliente cliente = findClienteByEmail(clienteEmail);
 
         // Sicurezza: un cliente può modificare solo le proprie prenotazioni
         if (!vecchiaPrenotazione.getCliente().getId().equals(cliente.getId())) {
@@ -86,9 +86,9 @@ public class BookingService {
      * Cancella una prenotazione per un cliente.
      * Implementa: Cancella prenotazione turno [cite: 203]
      */
-    public void cancelBooking(String bookingId, String clienteMail) {
+    public void cancelBooking(String bookingId, String clienteEmail) {
         Prenotazione prenotazione = findBookingById(bookingId);
-        Cliente cliente = findClienteByMail(clienteMail);
+        Cliente cliente = findClienteByEmail(clienteEmail);
 
         // Sicurezza: un cliente può cancellare solo le proprie prenotazioni
         if (!prenotazione.getCliente().getId().equals(cliente.getId())) {
@@ -157,8 +157,8 @@ public class BookingService {
         }
     }
     
-    private Cliente findClienteByMail(String email) {
-        return clienteRepository.findByMail(email)
+    private Cliente findClienteByEmail(String email) {
+        return clienteRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("Cliente non trovato con email: " + email));
     }
     

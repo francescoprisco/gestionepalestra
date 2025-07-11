@@ -61,14 +61,14 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest signUpRequest) {
-        if (clienteRepository.existsByMail(signUpRequest.getMail()) || receptionistRepository.existsByMail(signUpRequest.getMail())) {
+        if (clienteRepository.existsByEmail(signUpRequest.getEmail()) || receptionistRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Errore: L'email è già in uso!"));
         }
 
         Cliente cliente = new Cliente();
         cliente.setNome(signUpRequest.getNome());
         cliente.setCognome(signUpRequest.getCognome());
-        cliente.setMail(signUpRequest.getMail());
+        cliente.setEmail(signUpRequest.getEmail());
         cliente.setPassword(encoder.encode(signUpRequest.getPassword()));
         cliente.setNfcId(signUpRequest.getNfcId());
 
@@ -85,7 +85,7 @@ public class AuthController {
     // --- METODO AGGIORNATO PER REGISTRARE UN RECEPTIONIST ---
     @PostMapping("/register/receptionist")
     public ResponseEntity<?> registerReceptionist(@Valid @RequestBody ReceptionistRegisterRequest signUpRequest) {
-        if (receptionistRepository.existsByMail(signUpRequest.getMail()) || clienteRepository.existsByMail(signUpRequest.getMail())) {
+        if (receptionistRepository.existsByEmail(signUpRequest.getEmail()) || clienteRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Errore: L'email è già in uso!"));
         }
 
@@ -96,7 +96,7 @@ public class AuthController {
         receptionist.setNome(signUpRequest.getNome());
         receptionist.setCognome(signUpRequest.getCognome());
         
-        receptionist.setMail(signUpRequest.getMail());
+        receptionist.setEmail(signUpRequest.getEmail());
         receptionist.setPassword(encoder.encode(signUpRequest.getPassword()));
         
         // Assegna il ruolo di default
