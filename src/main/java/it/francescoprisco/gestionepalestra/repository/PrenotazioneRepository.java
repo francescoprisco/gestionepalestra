@@ -8,12 +8,11 @@ import java.util.List;
 public interface PrenotazioneRepository extends MongoRepository<Prenotazione, String> {
 
     long countByDataAndFasciaOraria_Id(LocalDate data, String fasciaOrariaId);
-
     boolean existsByCliente_IdAndDataAndFasciaOraria_Id(String clienteId, LocalDate data, String fasciaOrariaId);
-    
     boolean existsByCliente_IdAndData(String clienteId, LocalDate data);
-
-    List<Prenotazione> findByCliente_Email(String email);
-
+    
+    // NOME METODO CORRETTO: Cerca per ID del cliente, non per email
+    List<Prenotazione> findByCliente_Id(String clienteId);
+    
     List<Prenotazione> findByData(LocalDate data);
 }

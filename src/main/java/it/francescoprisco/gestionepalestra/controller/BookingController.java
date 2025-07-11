@@ -4,7 +4,6 @@ import it.francescoprisco.gestionepalestra.dto.BookingRequest;
 import it.francescoprisco.gestionepalestra.dto.FasciaOrariaDisponibilita;
 import it.francescoprisco.gestionepalestra.dto.MessageResponse;
 import it.francescoprisco.gestionepalestra.model.Prenotazione;
-import it.francescoprisco.gestionepalestra.repository.PrenotazioneRepository;
 import it.francescoprisco.gestionepalestra.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,8 +21,6 @@ public class BookingController {
 
     @Autowired
     private BookingService bookingService;
-    @Autowired
-    private PrenotazioneRepository prenotazioneRepository;
 
     @GetMapping("/availability/{data}")
     public ResponseEntity<List<FasciaOrariaDisponibilita>> getAvailability(
@@ -33,8 +30,8 @@ public class BookingController {
 
     @GetMapping("/my-bookings")
     public ResponseEntity<List<Prenotazione>> getMyBookings(Principal principal) {
-        // Nota: ho corretto il metodo in ClienteRepository per questa chiamata
-        return ResponseEntity.ok(prenotazioneRepository.findByCliente_Email(principal.getName()));
+        // Usa il nuovo metodo del service
+        return ResponseEntity.ok(bookingService.getMyBookings(principal.getName()));
     }
 
     @PostMapping
