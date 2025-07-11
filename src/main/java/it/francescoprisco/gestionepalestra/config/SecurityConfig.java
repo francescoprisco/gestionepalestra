@@ -58,7 +58,6 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> 
                 auth.requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/nfc/**").permitAll()
-                    // NUOVA REGOLA: Solo i receptionist possono accedere agli endpoint /admin
                     .requestMatchers("/api/admin/**").hasRole("RECEPTIONIST")
                     .anyRequest().authenticated()
             );
