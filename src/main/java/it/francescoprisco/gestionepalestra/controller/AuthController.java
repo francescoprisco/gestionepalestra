@@ -20,7 +20,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+/**
+ * Controller che gestisce l'autenticazione e la registrazione degli utenti.
+ * Gli endpoint qui sono pubblici.
+ */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -40,8 +43,11 @@ public class AuthController {
     @Autowired
     JwtUtils jwtUtils;
 
-    // ... (metodo /login e /register cliente rimangono invariati) ...
-
+    /**
+     * Autentica un utente (cliente o receptionist) e restituisce un token JWT.
+     * @param loginRequest DTO con email e password.
+     * @return ResponseEntity con il token JWT.
+     */
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody AuthRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
@@ -58,7 +64,11 @@ public class AuthController {
 
         return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), roles));
     }
-
+    /**
+     * Registra un nuovo utente di tipo Cliente.
+     * @param signUpRequest DTO con i dati del nuovo cliente.
+     * @return Messaggio di successo o errore.
+     */
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest signUpRequest) {
         if (clienteRepository.existsByEmail(signUpRequest.getEmail()) || receptionistRepository.existsByEmail(signUpRequest.getEmail())) {
@@ -82,24 +92,25 @@ public class AuthController {
     }
 
 
-    // --- METODO AGGIORNATO PER REGISTRARE UN RECEPTIONIST ---
+    /**
+     * Registra un nuovo utente di tipo Receptionist.
+     * @param signUpRequest DTO con i dati del nuovo receptionist.
+     * @return Messaggio di successo o errore.
+     */
     @PostMapping("/register/receptionist")
     public ResponseEntity<?> registerReceptionist(@Valid @RequestBody ReceptionistRegisterRequest signUpRequest) {
         if (receptionistRepository.existsByEmail(signUpRequest.getEmail()) || clienteRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Errore: L'email è già in uso!"));
         }
 
-        // Crea il nuovo account receptionist
         Receptionist receptionist = new Receptionist();
         
-        // Imposta i nuovi campi
         receptionist.setNome(signUpRequest.getNome());
         receptionist.setCognome(signUpRequest.getCognome());
         
         receptionist.setEmail(signUpRequest.getEmail());
         receptionist.setPassword(encoder.encode(signUpRequest.getPassword()));
         
-        // Assegna il ruolo di default
         Set<String> roles = new HashSet<>();
         roles.add("ROLE_RECEPTIONIST");
         receptionist.setRoles(roles);

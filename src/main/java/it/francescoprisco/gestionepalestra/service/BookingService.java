@@ -17,7 +17,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
+/**
+ * Service che contiene tutta la logica di business per la gestione delle prenotazioni.
+ */
 @Service
 public class BookingService {
 
@@ -25,42 +27,50 @@ public class BookingService {
     @Autowired private FasciaOrariaRepository fasciaOrariaRepository;
     @Autowired private ClienteRepository clienteRepository;
     @Autowired private NotificationService notificationService;
+    // Definiamo un fuso orario di riferimento per tutte le operazioni di data/ora.
 
     private static final ZoneId ZONE_ID = ZoneId.of("Europe/Rome");
 
     /**
-     * LOGICA FINALE: Valida l'accesso NFC con una finestra di tolleranza di
-     * 15 minuti prima dell'inizio e 15 minuti dopo la fine della fascia oraria.
+     * Valida un accesso tramite NFC ID.
+     * L'accesso è consentito in una finestra di tolleranza di 15 minuti prima dell'inizio
+     * e 15 minuti dopo la fine della fascia oraria prenotata per il giorno corrente.
+     * @param nfcId L'ID della tessera NFC del cliente.
+     * @return true se l'accesso è consentito, false altrimenti.
      */
     public boolean validateNfcBooking(String nfcId) {
+                // Cerca il cliente tramite NFC ID
+
         return clienteRepository.findByNfcId(nfcId)
             .map(cliente -> {
+                // Calcola l'inizio e la fine della giornata di oggi nel fuso orario del server
                 LocalDate oggi = LocalDate.now(ZONE_ID);
                 Instant inizioGiorno = oggi.atStartOfDay(ZONE_ID).toInstant();
                 Instant fineGiorno = oggi.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
 
-                // 1. Trova tutte le prenotazioni del cliente per oggi
+                // Trova tutte le prenotazioni del cliente per la giornata odierna
                 List<Prenotazione> prenotazioniDiOggi = prenotazioneRepository.findByCliente_IdAndDataBetween(cliente.getId(), inizioGiorno, fineGiorno);
 
                 if (prenotazioniDiOggi.isEmpty()) {
                     return false;
                 }
 
-                // 2. Controlla ogni prenotazione per vedere se l'orario attuale è valido
+
                 Instant now = Instant.now();
+                // Controlla ogni prenotazione del giorno per vedere se l'orario attuale è valido
                 for (Prenotazione prenotazione : prenotazioniDiOggi) {
                     FasciaOraria fascia = prenotazione.getFasciaOraria();
                     LocalDate dataPrenotazione = LocalDate.ofInstant(prenotazione.getData(), ZONE_ID);
                     
-                    // 3. Ricostruisce l'orario di inizio e fine della fascia oraria nel giorno corretto
+                    // Ricostruisce l'orario esatto di inizio e fine della fascia prenotata
                     Instant orarioInizioFascia = dataPrenotazione.atTime(fascia.getOraInizio()).atZone(ZONE_ID).toInstant();
                     Instant orarioFineFascia = dataPrenotazione.atTime(fascia.getOraFine()).atZone(ZONE_ID).toInstant();
 
-                    // 4. Calcola la finestra di validità: 15 min prima dell'inizio e 15 min dopo la fine
+                    // Calcola la finestra di validità con la tolleranza
                     Instant inizioFinestra = orarioInizioFascia.minus(15, ChronoUnit.MINUTES);
                     Instant fineFinestra = orarioFineFascia.plus(15, ChronoUnit.MINUTES);
 
-                    // 5. Controlla se l'orario attuale è dentro la finestra
+                    // Controlla se l'orario attuale è all'interno della finestra di tolleranza
                     if (!now.isBefore(inizioFinestra) && now.isBefore(fineFinestra)) {
                         return true; // Accesso consentito!
                     }
@@ -71,8 +81,11 @@ public class BookingService {
             .orElse(false); // Cliente non trovato
     }
 
-    // --- Metodi rimanenti (con la logica corretta per il fuso orario) ---
-    
+     /**
+     * Restituisce la lista delle sole fasce orarie che hanno posti disponibili per una data specifica.
+     * @param data La data per cui verificare la disponibilità.
+     * @return Una lista di DTO contenenti le informazioni sulle fasce disponibili.
+     */   
     public List<FasciaOrariaDisponibilita> getAvailabilityForDay(LocalDate data) {
         List<FasciaOraria> fasceAttive = fasciaOrariaRepository.findAll().stream()
                 .filter(FasciaOraria::isActive)
@@ -89,7 +102,14 @@ public class BookingService {
             .filter(FasciaOrariaDisponibilita::isDisponibile)
             .collect(Collectors.toList());
     }
-    
+
+    /**
+     * Crea una nuova prenotazione per un cliente registrato.
+     * @param clienteEmail Email del cliente.
+     * @param fasciaOrariaId ID della fascia oraria.
+     * @param data Data della prenotazione.
+     * @return La prenotazione creata.
+     */
     public Prenotazione createBooking(String clienteEmail, String fasciaOrariaId, LocalDate data) {
         FasciaOraria fascia = findFasciaOrariaById(fasciaOrariaId);
         Cliente cliente = findClienteByEmail(clienteEmail);
@@ -113,13 +133,23 @@ public class BookingService {
             throw new RuntimeException("Posti esauriti per la fascia oraria selezionata.");
         }
     }
-
+    /**
+     * Trova le prenotazioni di un cliente specifico.
+     * @param clienteEmail Email del cliente.
+     * @return Lista delle sue prenotazioni.
+     */
     public List<Prenotazione> getMyBookings(String clienteEmail) {
         return clienteRepository.findByEmail(clienteEmail)
             .map(cliente -> prenotazioneRepository.findByCliente_Id(cliente.getId()))
             .orElse(Collections.emptyList());
     }
-    
+    /**
+     * Crea una prenotazione per un cliente registrato, eseguita da un receptionist.
+     * @param clienteId ID del cliente.
+     * @param fasciaOrariaId ID della fascia oraria.
+     * @param data Data della prenotazione.
+     * @return La prenotazione creata.
+     */
     public Prenotazione createBookingForRegisteredClient(String clienteId, String fasciaOrariaId, LocalDate data) {
         FasciaOraria fascia = findFasciaOrariaById(fasciaOrariaId);
         Cliente cliente = clienteRepository.findById(clienteId)
@@ -131,7 +161,13 @@ public class BookingService {
         p.setData(data.atStartOfDay(ZONE_ID).toInstant());
         return prenotazioneRepository.save(p);
     }
-
+    /**
+     * Crea una prenotazione per un cliente occasionale, eseguita da un receptionist.
+     * @param nomeCliente Nome del cliente occasionale.
+     * @param fasciaOrariaId ID della fascia oraria.
+     * @param data Data della prenotazione.
+     * @return La prenotazione creata.
+     */
     public Prenotazione createBookingForOccasional(String nomeCliente, String fasciaOrariaId, LocalDate data) {
         FasciaOraria fascia = findFasciaOrariaById(fasciaOrariaId);
         checkAvailability(fascia, data);
@@ -141,7 +177,14 @@ public class BookingService {
         p.setData(data.atStartOfDay(ZONE_ID).toInstant());
         return prenotazioneRepository.save(p);
     }
-    
+    /**
+     * Modifica una prenotazione esistente di un cliente.
+     * @param bookingId ID della prenotazione da modificare.
+     * @param clienteEmail Email del cliente che esegue la modifica.
+     * @param nuovaFasciaId ID della nuova fascia oraria.
+     * @param nuovaData Nuova data della prenotazione.
+     * @return La prenotazione aggiornata.
+     */
     public Prenotazione modifyBooking(String bookingId, String clienteEmail, String nuovaFasciaId, LocalDate nuovaData) {
         Prenotazione vecchiaPrenotazione = findBookingById(bookingId);
         Cliente cliente = findClienteByEmail(clienteEmail);
@@ -154,7 +197,11 @@ public class BookingService {
         vecchiaPrenotazione.setData(nuovaData.atStartOfDay(ZONE_ID).toInstant());
         return prenotazioneRepository.save(vecchiaPrenotazione);
     }
-    
+    /**
+     * Cancella una prenotazione esistente di un cliente.
+     * @param bookingId ID della prenotazione da cancellare.
+     * @param clienteEmail Email del cliente che esegue la cancellazione.
+     */
     public void cancelBooking(String bookingId, String clienteEmail) {
         Prenotazione prenotazione = findBookingById(bookingId);
         Cliente cliente = findClienteByEmail(clienteEmail);
@@ -163,11 +210,17 @@ public class BookingService {
         }
         prenotazioneRepository.delete(prenotazione);
     }
-    
+    /**
+     * Cancella una qualsiasi prenotazione. Metodo riservato al receptionist.
+     * @param bookingId ID della prenotazione da cancellare.
+     */
     public void cancelAnyBooking(String bookingId) {
         prenotazioneRepository.deleteById(bookingId);
     }
-    
+    /**
+     * Disabilita una fascia oraria per le prenotazioni future.
+     * @param fasciaOrariaId ID della fascia da disabilitare.
+     */
     public void disableSlot(String fasciaOrariaId) {
         FasciaOraria fascia = findFasciaOrariaById(fasciaOrariaId);
         fascia.setActive(false);
@@ -189,17 +242,14 @@ public class BookingService {
         return prenotazioneRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Prenotazione non trovata con ID: " + id));
     }
-    
+    /**
+     * Trova tutte le prenotazioni per un dato giorno.
+     * @param data La data di interesse.
+     * @return Lista delle prenotazioni.
+     */
     public List<Prenotazione> getBookingsForDay(LocalDate data) {
         Instant inizioGiorno = data.atStartOfDay(ZONE_ID).toInstant();
         Instant fineGiorno = data.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
         return prenotazioneRepository.findByDataBetween(inizioGiorno, fineGiorno);
-    }
-}
-
-@Service
-class NotificationService {
-    public void notifyUsersOfCancellation(String fasciaOrariaId, LocalDate data) {
-        System.out.println("NOTIFICA: Avvio invio notifiche di cancellazione per fascia " + fasciaOrariaId);
     }
 }

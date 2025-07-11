@@ -8,14 +8,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+/**
+ * Controller pubblico per la validazione degli accessi tramite NFC.
+ */
 @RestController
-@RequestMapping("/api/nfc") // Gestisce tutti gli URL che iniziano con /api/nfc
+@RequestMapping("/api/nfc")
 public class NfcController {
 
     @Autowired
     private BookingService bookingService;
-
+    /**
+     * Valida una tessera NFC e controlla se esiste una prenotazione valida
+     * per il giorno corrente, con una finestra di tolleranza.
+     * @param nfcId Il codice della tessera NFC passata.
+     * @return Messaggio di "Accesso Consentito" o "Accesso Negato".
+     */
     @GetMapping("/validate/{nfcId}")
     public ResponseEntity<?> validateBooking(@PathVariable String nfcId) {
         boolean isValid = bookingService.validateNfcBooking(nfcId);

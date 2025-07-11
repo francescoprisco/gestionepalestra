@@ -14,12 +14,23 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
+/**
+ * Componente che gestisce i tentativi di accesso non autorizzati.
+ * Viene attivato da Spring Security quando un utente non autenticato
+ * prova ad accedere a una risorsa protetta.
+ */
 @Component
 public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthEntryPoint.class);
-
+    /**
+     * Metodo chiamato quando l'autenticazione fallisce.
+     * Invece di restituire la pagina di errore di default, costruisce una risposta JSON personalizzata
+     * con status 401 Unauthorized.
+     * @param request La richiesta che ha causato l'eccezione.
+     * @param response La risposta HTTP.
+     * @param authException L'eccezione che ha causato l'errore.
+     */
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {

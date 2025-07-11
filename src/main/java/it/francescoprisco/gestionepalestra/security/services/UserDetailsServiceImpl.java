@@ -13,7 +13,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.stream.Collectors;
-
+/**
+ * Implementazione personalizzata dell'interfaccia UserDetailsService di Spring Security.
+ * Il suo scopo è caricare i dati di un utente (da qualsiasi fonte dati) in base al suo username.
+ */
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
@@ -22,7 +25,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
     private ReceptionistRepository receptionistRepository;
-
+    /**
+     * Carica un utente tramite il suo username (in questo caso, l'email).
+     * Cerca prima tra i clienti e poi tra i receptionist.
+     * @param username L'email dell'utente da cercare.
+     * @return un oggetto UserDetails che Spring Security userà per l'autenticazione.
+     * @throws UsernameNotFoundException se nessun utente viene trovato con quella email.
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         // First, try to find a Cliente

@@ -12,7 +12,10 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Date;
 
-// Utility per creare, validare e leggere i token JWT
+/**
+ * Classe di utilità per la gestione dei JSON Web Token (JWT).
+ * Si occupa della generazione, validazione e lettura dei token.
+ */
 @Component
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
@@ -26,7 +29,11 @@ public class JwtUtils {
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
-
+    /**
+     * Genera un token JWT per un utente autenticato.
+     * @param authentication L'oggetto Authentication che contiene i dettagli dell'utente.
+     * @return una stringa che rappresenta il token JWT.
+     */
     public String generateJwtToken(Authentication authentication) {
         User userPrincipal = (User) authentication.getPrincipal();
 
@@ -37,11 +44,20 @@ public class JwtUtils {
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
-
+    /**
+     * Estrae l'username (email) da un token JWT.
+     * @param token Il token JWT.
+     * @return L'email dell'utente.
+     */
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody().getSubject();
     }
-
+    /**
+     * Valida un token JWT.
+     * Controlla la firma, la scadenza e il formato.
+     * @param authToken Il token da validare.
+     * @return true se il token è valido, false altrimenti.
+     */
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(authToken);

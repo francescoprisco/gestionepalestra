@@ -5,6 +5,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.Set;
 
+/**
+ * Rappresenta un utente receptionist del sistema.
+ */
 @Document(collection = "receptionists")
 @Data
 public class Receptionist {
@@ -16,6 +19,6 @@ public class Receptionist {
     private String cognome;
 
     private String email;
-    private String password;
-    private Set<String> roles;
+    private String password; // Salvata come hash Bcrypt
+    private Set<String> roles; // Ruoli per la sicurezza (es. "ROLE_RECEPTIONIST")
 }

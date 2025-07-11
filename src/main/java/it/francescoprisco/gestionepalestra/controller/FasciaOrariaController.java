@@ -10,16 +10,23 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+/**
+ * Controller per le operazioni amministrative sulle fasce orarie.
+ * Tutti gli endpoint richiedono il ruolo 'ROLE_RECEPTIONIST'.
+ */
 @RestController
-@RequestMapping("/api/admin/slots") // Endpoint protetti per amministrazione
-@PreAuthorize("hasRole('RECEPTIONIST')") // Solo i receptionist possono accedere
+@RequestMapping("/api/admin/slots")
+@PreAuthorize("hasRole('RECEPTIONIST')")
 public class FasciaOrariaController {
 
     @Autowired
     private FasciaOrariaRepository fasciaOrariaRepository;
 
-    // --- NUOVO ENDPOINT PER CREARE UNA FASCIA ORARIA ---
+    /**
+     * Crea una nuova fascia oraria.
+     * @param request DTO con i dettagli della nuova fascia.
+     * @return La fascia oraria creata.
+     */
     @PostMapping
     public ResponseEntity<FasciaOraria> createFasciaOraria(@Valid @RequestBody FasciaOrariaRequest request) {
         FasciaOraria nuovaFascia = new FasciaOraria();
@@ -33,13 +40,20 @@ public class FasciaOrariaController {
         return ResponseEntity.ok(nuovaFascia);
     }
 
-    // --- ENDPOINT PER VISUALIZZARE TUTTE LE FASCE ORARIE CREATE ---
+    /**
+     * Restituisce la lista di tutte le fasce orarie esistenti.
+     * @return Lista di tutte le fasce orarie.
+     */
     @GetMapping
     public ResponseEntity<List<FasciaOraria>> getAllFasceOrarie() {
         return ResponseEntity.ok(fasciaOrariaRepository.findAll());
     }
 
-    // --- ENDPOINT PER ELIMINARE UNA FASCIA ORARIA ---
+    /**
+     * Elimina una fascia oraria.
+     * @param id L'ID della fascia da eliminare.
+     * @return Un messaggio di conferma.
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteFasciaOraria(@PathVariable String id) {
         fasciaOrariaRepository.deleteById(id);

@@ -16,7 +16,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+/**
+ * Classe principale per la configurazione di Spring Security.
+ * Definisce le regole di accesso agli endpoint, il gestore di autenticazione e la codifica delle password.
+ */
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
@@ -26,12 +29,19 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthEntryPoint unauthorizedHandler;
-
+    /**
+     * Crea un bean per il nostro filtro di autenticazione JWT.
+     * @return Il filtro JWT.
+     */
     @Bean
     public JwtAuthTokenFilter authenticationJwtTokenFilter() {
         return new JwtAuthTokenFilter();
     }
-
+    /**
+     * Configura il provider di autenticazione che usa il nostro UserDetailsService
+     * per caricare i dati dell'utente e il PasswordEncoder per verificare le password.
+     * @return Il provider di autenticazione configurato.
+     */
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -39,17 +49,28 @@ public class SecurityConfig {
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
-
+    /**
+     * Espone l'AuthenticationManager come bean per poterlo usare nel nostro AuthController.
+     * @param authConfig La configurazione di autenticazione di Spring.
+     * @return L'AuthenticationManager.
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
-
+    /**
+     * Definisce l'algoritmo di codifica delle password (BCrypt).
+     * @return L'istanza del PasswordEncoder.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
+    /**
+     * Definisce la catena di filtri di sicurezza e le regole di autorizzazione HTTP.
+     * @param http L'oggetto HttpSecurity da configurare.
+     * @return La SecurityFilterChain costruita.
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
