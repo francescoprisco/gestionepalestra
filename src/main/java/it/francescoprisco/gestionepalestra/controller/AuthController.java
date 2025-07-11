@@ -2,9 +2,9 @@ package it.francescoprisco.gestionepalestra.controller;
 
 import it.francescoprisco.gestionepalestra.dto.*;
 import it.francescoprisco.gestionepalestra.model.Cliente;
-import it.francescoprisco.gestionepalestra.model.Receptionist; // Importa il modello Receptionist
+import it.francescoprisco.gestionepalestra.model.Receptionist;
 import it.francescoprisco.gestionepalestra.repository.ClienteRepository;
-import it.francescoprisco.gestionepalestra.repository.ReceptionistRepository; // Importa il repository
+import it.francescoprisco.gestionepalestra.repository.ReceptionistRepository;
 import it.francescoprisco.gestionepalestra.security.jwt.JwtUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,6 @@ public class AuthController {
     @Autowired
     ClienteRepository clienteRepository;
 
-    // Aggiungi il repository per i receptionist
     @Autowired
     ReceptionistRepository receptionistRepository;
 
@@ -40,6 +39,8 @@ public class AuthController {
 
     @Autowired
     JwtUtils jwtUtils;
+
+    // ... (metodo /login e /register cliente rimangono invariati) ...
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody AuthRequest loginRequest) {
@@ -60,7 +61,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest signUpRequest) {
-        if (clienteRepository.existsByMail(signUpRequest.getMail())) {
+        if (clienteRepository.existsByMail(signUpRequest.getMail()) || receptionistRepository.existsByMail(signUpRequest.getMail())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Errore: L'email è già in uso!"));
         }
 
@@ -80,7 +81,8 @@ public class AuthController {
         return ResponseEntity.ok(new MessageResponse("Utente cliente registrato con successo!"));
     }
 
-    // --- NUOVO ENDPOINT PER REGISTRARE UN RECEPTIONIST ---
+
+    // --- METODO AGGIORNATO PER REGISTRARE UN RECEPTIONIST ---
     @PostMapping("/register/receptionist")
     public ResponseEntity<?> registerReceptionist(@Valid @RequestBody ReceptionistRegisterRequest signUpRequest) {
         if (receptionistRepository.existsByMail(signUpRequest.getMail()) || clienteRepository.existsByMail(signUpRequest.getMail())) {
@@ -89,6 +91,11 @@ public class AuthController {
 
         // Crea il nuovo account receptionist
         Receptionist receptionist = new Receptionist();
+        
+        // Imposta i nuovi campi
+        receptionist.setNome(signUpRequest.getNome());
+        receptionist.setCognome(signUpRequest.getCognome());
+        
         receptionist.setMail(signUpRequest.getMail());
         receptionist.setPassword(encoder.encode(signUpRequest.getPassword()));
         

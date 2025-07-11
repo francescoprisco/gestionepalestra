@@ -9,8 +9,13 @@ import java.util.Set;
 @Data
 public class Receptionist {
     @Id
-    private String id; // ID_Receptionist
+    private String id;
+    
+    // CAMPI AGGIUNTI
+    private String nome;
+    private String cognome;
+
     private String mail;
     private String password;
-    private Set<String> roles; // e.g., "ROLE_RECEPTIONIST"
+    private Set<String> roles;
 }
