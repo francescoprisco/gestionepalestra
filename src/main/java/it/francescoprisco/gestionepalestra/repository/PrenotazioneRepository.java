@@ -8,11 +8,12 @@ import java.util.List;
 public interface PrenotazioneRepository extends MongoRepository<Prenotazione, String> {
 
     long countByDataBetweenAndFasciaOraria_Id(Instant start, Instant end, String fasciaOrariaId);
-    
+
     boolean existsByCliente_IdAndDataBetween(String clienteId, Instant start, Instant end);
 
     List<Prenotazione> findByCliente_Id(String clienteId);
 
+    List<Prenotazione> findByCliente_IdAndDataBetween(String clienteId, Instant start, Instant end);
+    
     List<Prenotazione> findByDataBetween(Instant start, Instant end);
-
 }
