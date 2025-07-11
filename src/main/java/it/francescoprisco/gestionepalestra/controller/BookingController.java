@@ -1,7 +1,7 @@
 package it.francescoprisco.gestionepalestra.controller;
 
 import it.francescoprisco.gestionepalestra.dto.BookingRequest;
-import it.francescoprisco.gestionepalestra.dto.FasciaOrariaDisponibilitaDTO;
+import it.francescoprisco.gestionepalestra.dto.FasciaOrariaDisponibilita;
 import it.francescoprisco.gestionepalestra.dto.MessageResponse;
 import it.francescoprisco.gestionepalestra.model.Prenotazione;
 import it.francescoprisco.gestionepalestra.repository.PrenotazioneRepository;
@@ -26,7 +26,7 @@ public class BookingController {
     private PrenotazioneRepository prenotazioneRepository;
 
     @GetMapping("/availability/{data}")
-    public ResponseEntity<List<FasciaOrariaDisponibilitaDTO>> getAvailability(
+    public ResponseEntity<List<FasciaOrariaDisponibilita>> getAvailability(
         @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
         return ResponseEntity.ok(bookingService.getAvailabilityForDay(data));
     }

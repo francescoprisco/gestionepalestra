@@ -1,6 +1,6 @@
 package it.francescoprisco.gestionepalestra.service;
 
-import it.francescoprisco.gestionepalestra.dto.FasciaOrariaDisponibilitaDTO;
+import it.francescoprisco.gestionepalestra.dto.FasciaOrariaDisponibilita;
 import it.francescoprisco.gestionepalestra.model.Cliente;
 import it.francescoprisco.gestionepalestra.model.FasciaOraria;
 import it.francescoprisco.gestionepalestra.model.Prenotazione;
@@ -29,11 +29,11 @@ public class BookingService {
      * con l'indicazione dei posti occupati e della disponibilità.
      * Implementa: Visualizzazione in Tempo Reale della Disponibilità [cite: 152]
      */
-    public List<FasciaOrariaDisponibilitaDTO> getAvailabilityForDay(LocalDate data) {
+    public List<FasciaOrariaDisponibilita> getAvailabilityForDay(LocalDate data) {
         List<FasciaOraria> tutteLeFasce = fasciaOrariaRepository.findAll();
         return tutteLeFasce.stream().map(fascia -> {
             long postiOccupati = prenotazioneRepository.countByDataAndFasciaOraria_Id(data, fascia.getId());
-            return new FasciaOrariaDisponibilitaDTO(fascia, postiOccupati);
+            return new FasciaOrariaDisponibilita(fascia, postiOccupati);
         }).collect(Collectors.toList());
     }
 

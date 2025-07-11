@@ -3,7 +3,6 @@ package it.francescoprisco.gestionepalestra.config;
 import it.francescoprisco.gestionepalestra.security.jwt.JwtAuthEntryPoint;
 import it.francescoprisco.gestionepalestra.security.jwt.JwtAuthTokenFilter;
 import it.francescoprisco.gestionepalestra.security.services.UserDetailsServiceImpl;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -59,6 +58,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> 
                 auth.requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/nfc/**").permitAll()
+                    // NUOVA REGOLA: Solo i receptionist possono accedere agli endpoint /admin
+                    .requestMatchers("/api/admin/**").hasRole("RECEPTIONIST")
                     .anyRequest().authenticated()
             );
 
