@@ -45,6 +45,7 @@
         button { background-color: var(--primary-color); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 1rem; width: 100%; margin-top: 0.5rem; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         button.secondary { background-color: var(--secondary-color); }
+        button.secondary.active { background-color: var(--primary-color);color: white; }
         button.delete-btn { background-color: var(--danger-color); font-size: 0.8rem; padding: 0.4rem 0.8rem; width: auto; margin-top: 0; }
         
         #user-info { text-align: right; padding: 1rem; background: var(--gray); border-radius: 6px; margin-bottom: 2rem; display: flex; justify-content: flex-end; align-items: center; }
@@ -60,7 +61,7 @@
         #booking-creation-view button { width: auto; }
         #available-slots .slot-option { display: block; width: calc(100% - 2rem); text-align: left; background-color: var(--gray); border: 1px solid #ccc; margin-bottom: 0.5rem; padding: 1rem; border-radius: 4px; }
         #available-slots .slot-option:hover { background-color: #d3d9df; }
-        
+        .receptionist-actions { border-bottom: 1px solid var(--gray); padding-bottom: 1rem; margin-bottom: 1rem; }
         .receptionist-layout { display: flex; flex-wrap: wrap; gap: 2rem; }
         .calendar-container { flex: 1; min-width: 300px; }
         .day-details { flex: 1; min-width: 300px; }
@@ -132,25 +133,42 @@
 
         <div id="receptionist-view" class="hidden">
             <h2>Area Receptionist</h2>
-            <div class="receptionist-layout">
-                <div class="calendar-container">
-                    <h3>Calendario</h3>
-                    <div class="month-navigation">
-                        <button onclick="changeMonth(-1)" style="width:auto;">&lt; Prec</button>
-                        <h4 id="month-year-header"></h4>
-                        <button onclick="changeMonth(1)" style="width:auto;">Succ &gt;</button>
+            <div class="receptionist-actions">
+                <button id="btn-calendar" onclick="showReceptionistView('calendar')" class="secondary" style="width: auto;">Gestione Prenotazioni</button>
+                <button id="btn-slots" onclick="showReceptionistView('slots')" class="secondary" style="width: auto;">Crea Fascia Oraria</button>
+            </div>
+             <div id="receptionist-calendar-view">
+                <div class="receptionist-layout">
+                    <div class="calendar-container">
+                        <h3>Calendario</h3>
+                        <div class="month-navigation">
+                            <button onclick="changeMonth(-1)" style="width:auto;">&lt; Prec</button>
+                            <h4 id="month-year-header"></h4>
+                            <button onclick="changeMonth(1)" style="width:auto;">Succ &gt;</button>
+                        </div>
+                        <div class="calendar">
+                            <div class="calendar-header">Lun</div><div class="calendar-header">Mar</div><div class="calendar-header">Mer</div><div class="calendar-header">Gio</div><div class="calendar-header">Ven</div><div class="calendar-header">Sab</div><div class="calendar-header">Dom</div>
+                        </div>
+                        <div id="calendar-body" class="calendar"></div>
                     </div>
-                    <div class="calendar">
-                        <div class="calendar-header">Lun</div><div class="calendar-header">Mar</div><div class="calendar-header">Mer</div><div class="calendar-header">Gio</div><div class="calendar-header">Ven</div><div class="calendar-header">Sab</div><div class="calendar-header">Dom</div>
+                    <div class="day-details">
+                        <h3 id="details-day-header">Dettagli Giorno</h3>
+                        <div id="day-details-content">
+                            <p>Seleziona un giorno dal calendario.</p>
+                        </div>
                     </div>
-                    <div id="calendar-body" class="calendar"></div>
                 </div>
-                <div class="day-details">
-                    <h3 id="details-day-header">Dettagli Giorno</h3>
-                    <div id="day-details-content">
-                        <p>Seleziona un giorno dal calendario.</p>
-                    </div>
-                </div>
+            </div>
+
+            <div id="receptionist-slot-creation-view" class="hidden">
+                <h3>Crea Nuova Fascia Oraria</h3>
+                <form id="slot-creation-form" class="slot-form">
+                    <div class="form-group"><label for="slot-name">Nome Fascia (es. Mattina 09-10)</label><input type="text" id="slot-name" required></div>
+                    <div class="form-group"><label for="slot-start-time">Ora Inizio</label><input type="time" id="slot-start-time" required></div>
+                    <div class="form-group"><label for="slot-end-time">Ora Fine</label><input type="time" id="slot-end-time" required></div>
+                    <div class="form-group"><label for="slot-capacity">Posti Totali</label><input type="number" id="slot-capacity" required min="1"></div>
+                    <button type="submit">Crea Fascia</button>
+                </form>
             </div>
         </div>
     </div>
@@ -184,6 +202,44 @@
         }
     });
 
+    function showReceptionistView(viewName) {
+        document.getElementById('receptionist-calendar-view').classList.toggle('hidden', viewName !== 'calendar');
+        document.getElementById('receptionist-slot-creation-view').classList.toggle('hidden', viewName !== 'slots');
+
+        const btnCalendar = document.getElementById('btn-calendar');
+        const btnSlots = document.getElementById('btn-slots');
+
+        btnCalendar.classList.remove('active');
+        btnSlots.classList.remove('active');
+
+        if (viewName === 'calendar') {
+            btnCalendar.classList.add('active');
+        } else {
+            btnSlots.classList.add('active');
+        }
+    }
+    document.getElementById('slot-creation-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const payload = {
+            nome: document.getElementById('slot-name').value,
+            oraInizio: document.getElementById('slot-start-time').value,
+            oraFine: document.getElementById('slot-end-time').value,
+            postiTotali: parseInt(document.getElementById('slot-capacity').value)
+        };
+
+        try {
+            await makeAuthenticatedRequest('/api/admin/slots', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            alert('Fascia oraria creata con successo!');
+            document.getElementById('slot-creation-form').reset(); // Pulisce il form
+        } catch (error) {
+            alert(`Errore durante la creazione della fascia: ${error.message}`);
+        }
+    });
     function showTab(tabName) {
         document.getElementById('login-tab').classList.toggle('hidden', tabName !== 'login');
         document.getElementById('register-tab').classList.toggle('hidden', tabName !== 'register');
@@ -201,6 +257,7 @@
         }
         if (roles.includes('ROLE_RECEPTIONIST')) {
             receptionistView.classList.remove('hidden');
+            showReceptionistView('calendar'); // Mostra il calendario di default
             renderCalendar();
         }
     }
