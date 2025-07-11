@@ -6,6 +6,7 @@ import it.francescoprisco.gestionepalestra.security.services.UserDetailsServiceI
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -77,8 +78,11 @@ public class SecurityConfig {
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
-                auth.requestMatchers("/api/auth/**").permitAll()
+                  auth
+                    .requestMatchers("/", "/index.html", "/*.js", "/*.css", "/*.ico").permitAll()
+                    .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/nfc/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/bookings/availability/**").permitAll()
                     .requestMatchers("/api/admin/**").hasRole("RECEPTIONIST")
                     .anyRequest().authenticated()
             );

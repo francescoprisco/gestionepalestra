@@ -21,7 +21,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/bookings")
-@PreAuthorize("hasRole('CLIENTE')")
 public class BookingController {
 
     @Autowired
@@ -42,6 +41,7 @@ public class BookingController {
      * @return Lista delle prenotazioni del cliente.
      */
     @GetMapping("/my-bookings")
+    @PreAuthorize("hasRole('CLIENTE')") // <-- SPOSTATA QUI
     public ResponseEntity<List<Prenotazione>> getMyBookings(Principal principal) {
         // Usa il nuovo metodo del service
         return ResponseEntity.ok(bookingService.getMyBookings(principal.getName()));
@@ -53,6 +53,7 @@ public class BookingController {
      * @return La prenotazione creata.
      */
     @PostMapping
+    @PreAuthorize("hasRole('CLIENTE')") // <-- SPOSTATA QUI
     public ResponseEntity<Prenotazione> createBooking(@RequestBody BookingRequest request, Principal principal) {
         Prenotazione prenotazione = bookingService.createBooking(
             principal.getName(),
@@ -69,6 +70,7 @@ public class BookingController {
      * @return La prenotazione modificata.
      */
     @PutMapping("/{bookingId}")
+    @PreAuthorize("hasRole('CLIENTE')") // <-- SPOSTATA QUI
     public ResponseEntity<Prenotazione> modifyBooking(
         @PathVariable String bookingId,
         @RequestBody BookingRequest request,
@@ -88,6 +90,7 @@ public class BookingController {
      * @return Un messaggio di conferma.
      */
     @DeleteMapping("/{bookingId}")
+    @PreAuthorize("hasRole('CLIENTE')") // <-- SPOSTATA QUI
     public ResponseEntity<MessageResponse> cancelBooking(@PathVariable String bookingId, Principal principal) {
         bookingService.cancelBooking(bookingId, principal.getName());
         return ResponseEntity.ok(new MessageResponse("Prenotazione cancellata con successo."));

@@ -2,33 +2,32 @@ package it.francescoprisco.gestionepalestra.repository;
 
 import it.francescoprisco.gestionepalestra.model.Prenotazione;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import java.time.Instant;
 import java.util.List;
-/**
- * Repository per l'accesso ai dati delle Prenotazioni.
- */
+
 public interface PrenotazioneRepository extends MongoRepository<Prenotazione, String> {
+
     /**
-     * Conta le prenotazioni in un dato intervallo di tempo per una specifica fascia oraria.
-     * Usato per verificare la disponibilità.
+     * Usa una @Query esplicita per contare le prenotazioni in un intervallo di tempo.
+     * $gte (greater than or equal) e $lt (less than) è l'approccio corretto.
      */
+    @Query(value = "{ 'data': { '$gte': ?0, '$lt': ?1 }, 'fasciaOraria.$id': ?2 }", count = true)
     long countByDataBetweenAndFasciaOraria_Id(Instant start, Instant end, String fasciaOrariaId);
+    
     /**
-     * Controlla se un cliente ha già una prenotazione in un dato intervallo di tempo.
-     * Usato per la validazione NFC.
+     * Usa una @Query esplicita per verificare l'esistenza di una prenotazione.
      */
+    @Query(value = "{ 'cliente.$id': ?0, 'data': { '$gte': ?1, '$lt': ?2 } }", exists = true)
     boolean existsByCliente_IdAndDataBetween(String clienteId, Instant start, Instant end);
-    /**
-     * Trova tutte le prenotazioni di un cliente specifico.
-     */
+
     List<Prenotazione> findByCliente_Id(String clienteId);
+
     /**
-     * Trova tutte le prenotazioni in un dato intervallo di tempo e con un id cliente specifico.
+     * Usa una @Query esplicita per trovare tutte le prenotazioni in un intervallo di tempo.
      */
-    List<Prenotazione> findByCliente_IdAndDataBetween(String clienteId, Instant start, Instant end);
-    /**
-     * Trova tutte le prenotazioni in un dato intervallo di tempo.
-     * Usato dal receptionist per vedere le prenotazioni del giorno.
-     */
+    @Query("{ 'data': { '$gte': ?0, '$lt': ?1 } }")
     List<Prenotazione> findByDataBetween(Instant start, Instant end);
+    
+    List<Prenotazione> findByCliente_IdAndDataBetween(String clienteId, Instant start, Instant end);
 }

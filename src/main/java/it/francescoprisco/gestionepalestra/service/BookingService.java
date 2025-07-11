@@ -143,6 +143,7 @@ public class BookingService {
             .map(cliente -> prenotazioneRepository.findByCliente_Id(cliente.getId()))
             .orElse(Collections.emptyList());
     }
+
     /**
      * Crea una prenotazione per un cliente registrato, eseguita da un receptionist.
      * @param clienteId ID del cliente.
@@ -154,7 +155,17 @@ public class BookingService {
         FasciaOraria fascia = findFasciaOrariaById(fasciaOrariaId);
         Cliente cliente = clienteRepository.findById(clienteId)
             .orElseThrow(() -> new RuntimeException("Nessun cliente trovato con l'ID fornito: " + clienteId));
+        
+        // CORREZIONE: Aggiunto il controllo di disponibilità che mancava
         checkAvailability(fascia, data);
+
+        // Controlla se il cliente ha già una prenotazione per quel giorno
+        Instant inizioGiorno = data.atStartOfDay(ZONE_ID).toInstant();
+        Instant fineGiorno = data.plusDays(1).atStartOfDay(ZONE_ID).toInstant();
+        if (prenotazioneRepository.existsByCliente_IdAndDataBetween(cliente.getId(), inizioGiorno, fineGiorno)) {
+            throw new RuntimeException("Questo cliente ha già una prenotazione per questa giornata.");
+        }
+
         Prenotazione p = new Prenotazione();
         p.setCliente(cliente);
         p.setFasciaOraria(fascia);
