@@ -13,7 +13,7 @@ public class ReceptionistRegisterRequest {
     private String cognome;
 
     @NotBlank
-    private String mail;
+    private String email;
 
     @NotBlank
     private String password;

@@ -15,7 +15,7 @@ public class Receptionist {
     private String nome;
     private String cognome;
 
-    private String mail;
+    private String email;
     private String password;
     private Set<String> roles;
 }

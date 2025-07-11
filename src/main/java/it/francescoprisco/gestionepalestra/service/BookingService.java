@@ -157,9 +157,9 @@ public class BookingService {
         }
     }
     
-    private Cliente findClienteByMail(String mail) {
-        return clienteRepository.findByMail(mail)
-            .orElseThrow(() -> new RuntimeException("Cliente non trovato con email: " + mail));
+    private Cliente findClienteByMail(String email) {
+        return clienteRepository.findByMail(email)
+            .orElseThrow(() -> new RuntimeException("Cliente non trovato con email: " + email));
     }
     
     private FasciaOraria findFasciaOrariaById(String id) {

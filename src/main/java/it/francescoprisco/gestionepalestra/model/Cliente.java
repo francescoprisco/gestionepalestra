@@ -12,7 +12,7 @@ public class Cliente {
     private String id;
     private String nome;
     private String cognome;
-    private String mail;
+    private String email;
     private String password;
     private String nfcId;
     private Set<String> roles; // e.g., "ROLE_CLIENTE"

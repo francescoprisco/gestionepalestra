@@ -13,7 +13,7 @@ public interface PrenotazioneRepository extends MongoRepository<Prenotazione, St
     
     boolean existsByCliente_IdAndData(String clienteId, LocalDate data);
 
-    List<Prenotazione> findByCliente_Mail(String mail);
+    List<Prenotazione> findByCliente_Mail(String email);
 
     List<Prenotazione> findByData(LocalDate data);
 }
