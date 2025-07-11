@@ -2,11 +2,10 @@ package it.francescoprisco.gestionepalestra.controller;
 
 import it.francescoprisco.gestionepalestra.dto.BookingRequest;
 import it.francescoprisco.gestionepalestra.dto.MessageResponse;
-import it.francescoprisco.gestionepalestra.dto.ReceptionistBookingRequest; // Importa il nuovo DTO
+import it.francescoprisco.gestionepalestra.dto.ReceptionistBookingRequest;
 import it.francescoprisco.gestionepalestra.model.Prenotazione;
-import it.francescoprisco.gestionepalestra.repository.PrenotazioneRepository;
 import it.francescoprisco.gestionepalestra.service.BookingService;
-import jakarta.validation.Valid; // Importa @Valid
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -22,17 +21,14 @@ public class ReceptionistController {
 
     @Autowired
     private BookingService bookingService;
-    @Autowired
-    private PrenotazioneRepository prenotazioneRepository;
 
-    // ... (metodo getBookingsForDay rimane invariato) ...
+    // METODO CORRETTO: Ora chiama il service invece del repository
     @GetMapping("/bookings/day/{data}")
     public ResponseEntity<List<Prenotazione>> getBookingsForDay(
         @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
-        return ResponseEntity.ok(prenotazioneRepository.findByData(data));
+        return ResponseEntity.ok(bookingService.getBookingsForDay(data));
     }
 
-    // --- NUOVO ENDPOINT PER PRENOTARE UN CLIENTE REGISTRATO ---
     @PostMapping("/bookings/registered-client")
     public ResponseEntity<Prenotazione> createBookingForRegisteredClient(@Valid @RequestBody ReceptionistBookingRequest request) {
         Prenotazione prenotazione = bookingService.createBookingForRegisteredClient(
@@ -43,7 +39,6 @@ public class ReceptionistController {
         return ResponseEntity.ok(prenotazione);
     }
     
-    // Endpoint per prenotare un cliente occasionale
     @PostMapping("/bookings/occasional")
     public ResponseEntity<Prenotazione> createBookingForOccasional(@RequestBody BookingRequest request) {
         Prenotazione prenotazione = bookingService.createBookingForOccasional(
@@ -54,7 +49,6 @@ public class ReceptionistController {
         return ResponseEntity.ok(prenotazione);
     }
 
-    // ... (metodi cancelAnyBooking e disableTimeSlot rimangono invariati) ...
     @DeleteMapping("/bookings/{bookingId}")
     public ResponseEntity<MessageResponse> cancelAnyBooking(@PathVariable String bookingId) {
         bookingService.cancelAnyBooking(bookingId);
