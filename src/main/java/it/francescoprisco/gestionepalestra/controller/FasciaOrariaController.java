@@ -15,7 +15,7 @@ import java.util.List;
  * Tutti gli endpoint richiedono il ruolo 'ROLE_RECEPTIONIST'.
  */
 @RestController
-@RequestMapping("/api/admin/slots")
+@RequestMapping("/api/receptionist/slots")
 @PreAuthorize("hasRole('RECEPTIONIST')")
 public class FasciaOrariaController {
 

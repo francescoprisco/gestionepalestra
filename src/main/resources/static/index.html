@@ -229,7 +229,7 @@
         };
 
         try {
-            await makeAuthenticatedRequest('/api/admin/slots', {
+            await makeAuthenticatedRequest('/api/receptionist/slots', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
